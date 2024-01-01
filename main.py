@@ -21,23 +21,30 @@ class WmImage:
         self.canvas_img_id = 0  # canvas image ID used to update the image
 
     def load_image(self):
-        file = filedialog.askopenfile(mode="r", filetypes=[("image files", "*.jpg")])
-        if file:
-            self.file_name.set(file.name)
-            self.watermarked = False
-            self.saved = False
-            self.img_original = Image.open(file.name)
-            # print(self.img_original.format, self.img_original.size, self.img_original.mode)
+        if self.watermarked and not self.saved:
+            ok_to_load = messagebox.askokcancel(title="Are you sure?",
+                                                message="Watermarked image not saved!",
+                                                detail="Do you want to continue?")
+        else:
+            ok_to_load = True
+        if ok_to_load:
+            file = filedialog.askopenfile(mode="r", filetypes=[("image files", "*.jpg")])
+            if file:
+                self.file_name.set(file.name)
+                self.watermarked = False
+                self.saved = False
+                self.img_original = Image.open(file.name)
+                # print(self.img_original.format, self.img_original.size, self.img_original.mode)
 
-            # resize image to fit canvas
-            self.img_resized = ImageOps.contain(self.img_original, (1024, 768))
-            self.factor = self.img_original.size[0] / self.img_resized.size[0]
-            # print(self.img_resized.format, self.img_resized.size, self.img_resized.mode)
+                # resize image to fit canvas
+                self.img_resized = ImageOps.contain(self.img_original, (1024, 768))
+                self.factor = self.img_original.size[0] / self.img_resized.size[0]
+                # print(self.img_resized.format, self.img_resized.size, self.img_resized.mode)
 
-            # create a PhotoImage object for display within Tk canvas
-            self.photo_img = ImageTk.PhotoImage(self.img_resized)
-            wmi.canvas.itemconfigure(wmi.canvas_img_id, image=wmi.photo_img)
-            file.close()
+                # create a PhotoImage object for display within Tk canvas
+                self.photo_img = ImageTk.PhotoImage(self.img_resized)
+                wmi.canvas.itemconfigure(wmi.canvas_img_id, image=wmi.photo_img)
+                file.close()
 
     def wm_image(self):
         if self.img_original:
