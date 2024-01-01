@@ -1,0 +1,5 @@
+{
+  "fonts": ["arial", "comic", "verdana", "segoesc"],
+  "colors": ["white", "black", "blue", "cyan", "red"],
+  "font_sizes": ["20", "24", "28", "32", "36", "40"]
+}

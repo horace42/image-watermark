@@ -1,3 +1,4 @@
+import json
 from tkinter import *
 from tkinter import ttk
 from tkinter import messagebox
@@ -5,7 +6,7 @@ from wm_image import WmImage
 
 
 class MainWindow:
-    def __init__(self, r: Tk):
+    def __init__(self, r: Tk, fonts, colors, font_sizes):
         self.root_c = r
         mainframe = ttk.Frame(self.root_c, padding="3 12 3 12")
         mainframe.grid(column=0, row=0)
@@ -31,17 +32,17 @@ class MainWindow:
 
         # font picker
         wm_font = ttk.Combobox(mainframe, textvariable=wmi.font_var)
-        wm_font.configure(values=("arial", "comic", "verdana", "segoesc"))
+        wm_font.configure(values=fonts)
         wm_font.grid(column=1, row=2)
 
         # font color picker
         wm_color = ttk.Combobox(mainframe, textvariable=wmi.color_var)
-        wm_color.configure(values=("white", "black", "blue", "cyan", "red"))
+        wm_color.configure(values=colors)
         wm_color.grid(column=2, row=2)
 
         # font size picker
         wm_size = ttk.Combobox(mainframe, textvariable=wmi.size_var)
-        wm_size.configure(values=("20", "24", "28", "32", "36", "40"))
+        wm_size.configure(values=font_sizes)
         wm_size.grid(column=3, row=2)
 
         # watermark position picker
@@ -82,11 +83,24 @@ class MainWindow:
             self.root_c.destroy()
 
 
-# Tkinter configuration
-root = Tk()
-root.title("Image watermarking")
+def read_config():
+    with open("config.json") as f:
+        data = json.load(f)
+        f = tuple(f for f in data["fonts"])
+        c = tuple(c for c in data["colors"])
+        fs = tuple(s for s in data["font_sizes"])
+        return f, c, fs
 
-wmi = WmImage()
-MainWindow(root)
 
-root.mainloop()
+# main
+try:
+    fonts, colors, font_sizes = read_config()
+except KeyError as err:
+    print(f"Error loading config!\nMissing key {err}")
+else:
+    # Tkinter configuration
+    root = Tk()
+    root.title("Image watermarking")
+    wmi = WmImage()
+    MainWindow(root, fonts, colors, font_sizes)
+    root.mainloop()
