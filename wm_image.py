@@ -16,7 +16,7 @@ class WmImage:
         self.anchor = "ms"  # watermark anchor
         self.factor = 1.0  # resize factor, used in the position and font size calculation for the original image
         self.file_name = StringVar(value="No file loaded")
-        self.canvas: Canvas  # Canvas object to display the image from within the WmImage class
+        self.canvas: Canvas = None  # Canvas object to display the image from within the WmImage class
         self.canvas_img_id = 0  # canvas image ID used to update the image
         self.watermark_var = StringVar(value="watermark")
         self.font_var = StringVar(value="arial")
