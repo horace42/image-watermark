@@ -7,20 +7,23 @@ from PIL import ImageTk, Image, ImageOps, ImageDraw, ImageFont
 
 class WmImage:
     def __init__(self):
-        self.img_original: Image = None
-        self.img_resized: Image = None
-        self.photo_img: PhotoImage = None
+        self.img_original = Image.new(mode="RGB", size=(1024, 768), color="#83b0f7")
+        self.img_resized = Image.new(mode="RGB", size=(1024, 768), color="#83b0f7")
+        self.photo_img = ImageTk.PhotoImage(self.img_resized)
         self.watermarked: bool = False
         self.saved: bool = False
         self.wm_position = (0, 0)  # watermark position for the original picture
         self.wm_position_resized = (0, 0)  # watermark position for the resized picture
         self.anchor = "ms"  # watermark anchor
         self.factor = 1.0  # resize factor, used in the position and font size calculation for the original image
+        self.file_name = StringVar(value="No file loaded")
+        self.canvas: Canvas  # Canvas object to display the image from within the WmImage class
+        self.canvas_img_id = 0  # canvas image ID used to update the image
 
     def load_image(self):
         file = filedialog.askopenfile(mode="r", filetypes=[("image files", "*.jpg")])
         if file:
-            file_name_var.set(file.name)
+            self.file_name.set(file.name)
             self.watermarked = False
             self.saved = False
             self.img_original = Image.open(file.name)
@@ -33,7 +36,7 @@ class WmImage:
 
             # create a PhotoImage object for display within Tk canvas
             self.photo_img = ImageTk.PhotoImage(self.img_resized)
-            canvas.create_image(512, 384, image=self.photo_img)
+            wmi.canvas.itemconfigure(wmi.canvas_img_id, image=wmi.photo_img)
             file.close()
 
     def wm_image(self):
@@ -47,7 +50,7 @@ class WmImage:
             d.text(self.wm_position_resized, watermark_var.get(), anchor=self.anchor,
                    fill=color_var.get(), font=font_resized_img)
             self.photo_img = ImageTk.PhotoImage(self.img_resized)
-            canvas.create_image(512, 384, image=self.photo_img)
+            wmi.canvas.itemconfigure(wmi.canvas_img_id, image=wmi.photo_img)
 
             # watermark original image
             font_original_img = ImageFont.truetype(f"{font_var.get()}.ttf",
@@ -76,7 +79,7 @@ class WmImage:
                 else:
                     overwrite = True
                 if overwrite:
-                    wm_file_name = file_name_var.get().replace(".jpg", "_wm.jpg")
+                    wm_file_name = wmi.file_name.get().replace(".jpg", "_wm.jpg")
                     self.img_original.save(wm_file_name)
                     messagebox.showinfo(title="Information", message="Watermarked image saved!",
                                         detail=wm_file_name)
@@ -129,19 +132,18 @@ class WmImage:
             root.destroy()
 
 
-wmi = WmImage()
-
 # Tkinter configuration
 root = Tk()
 root.title("Image watermarking")
+
+wmi = WmImage()
 
 mainframe = ttk.Frame(root, padding="3 12 3 12")
 mainframe.grid(column=0, row=0)
 mainframe.configure(borderwidth=10, relief="raised")
 
 # label to display original file's name
-file_name_var = StringVar(value="No file loaded")
-file_label = ttk.Label(mainframe, width=100, textvariable=file_name_var)
+file_label = ttk.Label(mainframe, width=100, textvariable=wmi.file_name)
 file_label.grid(column=0, row=0, columnspan=4)
 
 # button to load a .jpg file
@@ -149,8 +151,9 @@ load_button = ttk.Button(mainframe, text="Load image", width=20, command=wmi.loa
 load_button.grid(column=5, row=0)
 
 # canvas to draw the resized image
-canvas = Canvas(mainframe, width=1024, height=768, background="#83b0f7", borderwidth=0, highlightthickness=0)
-canvas.grid(column=0, row=1, columnspan=6)
+wmi.canvas = Canvas(mainframe, width=1024, height=768, background="#83b0f7", borderwidth=0, highlightthickness=0)
+wmi.canvas.grid(column=0, row=1, columnspan=6)
+wmi.canvas_img_id = wmi.canvas.create_image(512, 384, image=wmi.photo_img)
 
 # the text to be inserted as watermark
 watermark_var = StringVar(value="watermark")
